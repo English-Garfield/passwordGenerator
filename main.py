@@ -6,6 +6,8 @@ import json
 import sys
 from typing import List, Dict, Any
 
+from sklearn.metrics.cluster import entropy
+
 
 class passwordGenerator:
 
@@ -100,8 +102,45 @@ class passwordGenerator:
 
         return len(password) * math.log2(charSpace)
 
-    def assessStrength(self):
-        pass
+    def assessStrength(self, password: str) -> Dict[str, Any]:
+        e = self.calculateEntropy(password)
+        length = len(password)
+
+        # Entropy-based strength
+        if e >= 80:
+            strength = 'Very Strong'
+            score = 100
+        elif e >= 60:
+            strength = 'Strong'
+            score = 80
+        elif e >= 40:
+            strength = 'Moderate'
+            score = 60
+        elif e >= 20:
+            strength = 'Weak'
+            score = 40
+        else:
+            strength = 'Very Weak'
+            score = 20
+
+        hasUpper = any(c.isupper() for c in password)
+        hasLower = any(c.islower() for c in password)
+        hasNumber = any(c.isdigit() for c in password)
+        hasSymbol = any(c in self.charSets['symbols'] for c in password)
+
+        charTypes = sum([hasUpper, hasLower, hasNumber, hasSymbol])
+
+        return {
+            'strength': strength,
+            'score': score,
+            'entropy': round(e, 2),
+            'length': length,
+            'charTypes': charTypes,
+            'hasUpper': hasUpper,
+            'hasLower': hasLower,
+            'hasNumber': hasNumber,
+            'hasSymbol': hasSymbol
+        }
 
     def generateMultiple(self):
         pass
