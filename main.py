@@ -1,3 +1,4 @@
+import math
 import secrets
 import string
 import argparse
@@ -16,13 +17,13 @@ class passwordGenerator:
             'symbols': '!@#$%^&*()_+-=[]{}|;:,.<>?'
         }
 
-    def generate_password(self,
-                          length: int = 16,
-                          useUppercase: bool = True,
-                          useLowercase: bool = True,
-                          useNumbers: bool = True,
-                          useSymbols: bool = True,
-                          excludeAmbiguous: bool = False) -> str:
+    def generatePassword(self,
+                         length: int = 16,
+                         useUppercase: bool = True,
+                         useLowercase: bool = True,
+                         useNumbers: bool = True,
+                         useSymbols: bool = True,
+                         excludeAmbiguous: bool = False) -> str:
         """
         args:
             length: Password length (4-128)
@@ -76,15 +77,28 @@ class passwordGenerator:
             passwordChars.append(secrets.choice(charPool))
 
         # shuffle chars
-        for i in range (len(passwordChars) - 1, 0, -1):
+        for i in range(len(passwordChars) - 1, 0, -1):
             j = secrets.randbelow(i + 1)
             passwordChars[i], passwordChars[j] = passwordChars[j], passwordChars[i]
 
         return ''.join(passwordChars)
 
+    def calculateEntropy(self, password: str) -> float:
+        charSpace = 0
 
-    def calculateEntropy(self):
-        pass
+        if any(c.isupper() for c in password):
+            charSpace += 26
+        if any(c.islower() for c in password):
+            charSpace += 26
+        if any(c.isdigit() for c in password):
+            charSpace += 10
+        if any(c in self.charSets['symbols'] for c in password):
+            charSpace += len(self.charSets['symbols'])
+
+        if charSpace == 0:
+            return 0.0
+
+        return len(password) * math.log2(charSpace)
 
     def assessStrength(self):
         pass
@@ -92,8 +106,10 @@ class passwordGenerator:
     def generateMultiple(self):
         pass
 
+
 def main():
     pass
+
 
 if __name__ == "__main__":
     main()
