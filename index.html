@@ -48,7 +48,7 @@
     }
 
     .length-display {
-        text-algin: center;
+        text-align: center;
         font-size: 0.9rem;
         color: #666;
     }
@@ -105,6 +105,7 @@
         background: #fafafa;
         resize: none;
         min-height: 70px;
+        box-sizing: border-box;
     }
 
     .copy-btn {
@@ -156,7 +157,7 @@
 </head>
 <body>
     <div class="container">
-        <h1> Password Generator</h1>
+        <h1>Password Generator</h1>
 
         <div class="form-group">
             <label for="length">Password Length</label>
@@ -172,7 +173,6 @@
         </div>
 
         <button class="generate-btn" onclick="generatePassword()">Generate Password</button>
-
 
         <div class="password-output">
           <textarea class="password-field" id="passwordField" readonly placeholder="Your password will appear here..."></textarea>
@@ -203,9 +203,14 @@
             document.getElementById('lengthDisplay').textContent = this.value + ' characters';
         });
 
+        // get random char from charset
+        function getRandomChar(charSet) {
+            return getSecureRandomChar(charSet);
+        }
+
         // password generation
         function generatePassword() {
-            const length = parseInt(document.getElementbyId('length').value);
+            const length = parseInt(document.getElementById('length').value);
             const useUppercase = document.getElementById('uppercase').checked;
             const useLowercase = document.getElementById('lowercase').checked;
             const useNumbers = document.getElementById('numbers').checked;
@@ -220,7 +225,6 @@
             // build char set
             let charPool = '';
             let requiredChars = [];
-
 
             if (useUppercase) {
                 charPool += charSets.uppercase;
@@ -247,7 +251,7 @@
 
             // fill w/ rdm
             for (let i = password.length; i < length; i++) {
-                password += getSecureRandomChar(charPool)
+                password += getSecureRandomChar(charPool);
             }
 
             // shuffle pw
@@ -258,7 +262,7 @@
             document.getElementById('copyBtn').style.display = 'block';
 
             // calc + display strength
-            updatePasswordStrength(password)
+            updatePasswordStrength(password);
         }
 
         // get sec rdm char
@@ -274,10 +278,10 @@
             return charSet[randomValue % charSet.length];
         }
 
-        // shffle str
+        // shuffle str
         function shuffleString(str) {
             const arr = str.split('');
-            for (let i = arr.length - 1; 1 > 0; i--) {
+            for (let i = arr.length - 1; i > 0; i--) {
                 const j = Math.floor(crypto.getRandomValues(new Uint32Array(1))[0] / 0x100000000 * (i + 1));
                 [arr[i], arr[j]] = [arr[j], arr[i]];
             }
@@ -290,12 +294,13 @@
             try {
                 await navigator.clipboard.writeText(passwordField.value);
                 const copyBtn = document.getElementById('copyBtn');
+                const originalText = copyBtn.textContent;
                 copyBtn.textContent = 'Copied!';
                 copyBtn.style.background = '#28a745';
 
                 setTimeout(() => {
-                    copyBtn.textContent = origionalText;
-                    copyBtn.style.background = '#28a745';
+                    copyBtn.textContent = originalText;
+                    copyBtn.style.background = '#007bff';
                 }, 2000);
             } catch (err) {
                 // fallback for old browsers
@@ -355,13 +360,12 @@
                 strengthFill.style.width = '20%';
                 strengthText.style.color = '#dc3545';
             }
-            strengthText.textContent = `Password Strength ${feedback}`;
+            strengthText.textContent = `Password Strength: ${feedback}`;
         }
 
         window.addEventListener('load', function() {
             generatePassword();
-        }); </script>
-
+        });
+    </script>
 </body>
 </html>
-
