@@ -9,10 +9,79 @@ from typing import List, Dict, Any
 class passwordGenerator:
 
     def __init__(self):
-        pass
+        self.charSets = {
+            'uppercase': string.ascii_uppercase,
+            'lowercase': string.ascii_lowercase,
+            'numbers': string.digits,
+            'symbols': '!@#$%^&*()_+-=[]{}|;:,.<>?'
+        }
 
-    def generate_password(self):
-        pass
+    def generate_password(self,
+                          length: int = 16,
+                          useUppercase: bool = True,
+                          useLowercase: bool = True,
+                          useNumbers: bool = True,
+                          useSymbols: bool = True,
+                          excludeAmbiguous: bool = False) -> str:
+        """
+        args:
+            length: Password length (4-128)
+            use_uppercase: Include uppercase letters
+            use_lowercase: Include lowercase letters
+            use_numbers: Include numbers
+            use_symbols: Include symbols
+            exclude_ambiguous: Exclude ambiguous characters (0, O, l, I, etc.)
+        """
+
+        if length < 4 or length > 128:
+            raise ValueError("Password length must be between 4 and 128 characters")
+
+        # char pool build
+        charPool = ''
+        requiredChars = []
+
+        charSets = self.charSets.copy()
+
+        # remove ambig chars
+        if excludeAmbiguous:
+            ambiguous = '0O1lI|`'
+            for key in charSets:
+                charSets[key] = ''.join(c for c in charSets[key] if c not in ambiguous)
+
+        if useUppercase:
+            charPool += charSets['uppercase']
+            requiredChars.append(secrets.choice(charSets['uppercase']))
+
+        if useLowercase:
+            charPool += charSets['lowercase']
+            requiredChars.append(secrets.choice(charSets['lowercase']))
+
+        if useNumbers:
+            charPool += charSets['numbers']
+            requiredChars.append(secrets.choice(charSets['numbers']))
+
+        if useSymbols:
+            charPool += charSets['symbols']
+            requiredChars.append(secrets.choice(charSets['symbols']))
+
+        if not charPool:
+            raise ValueError("At least one character type must be selected")
+
+        # Gen Pw w/ diversity
+        passwordChars = requiredChars[:]
+
+        # remaining chars
+        remainingLength = length - len(requiredChars)
+        for i in range(remainingLength):
+            passwordChars.append(secrets.choice(charPool))
+
+        # shuffle chars
+        for i in range (len(passwordChars) - 1, 0, -1):
+            j = secrets.randbelow(i + 1)
+            passwordChars[i], passwordChars[j] = passwordChars[j], passwordChars[i]
+
+        return ''.join(passwordChars)
+
 
     def calculateEntropy(self):
         pass
