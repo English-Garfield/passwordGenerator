@@ -1,0 +1,242 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Minimal Password Generator</title>
+  <style>
+    body {
+      font-family: system-ui, sans-serif;
+      background: #f4f4f4;
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 20px;
+    }
+
+    .container {
+      background: #fff;
+      border-radius: 12px;
+      padding: 30px;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+      max-width: 420px;
+      width: 100%;
+    }
+
+    h1 {
+      text-align: center;
+      font-size: 1.6rem;
+      color: #222;
+      margin-bottom: 20px;
+    }
+
+    .form-group{
+        margin-bottom: 15px;
+    }
+
+    label {
+        font-weight: 500;
+        font-size: 0.95rem;
+        color: #333;
+        display: block;
+        margin-bottom: 6px;
+    }
+
+    input[type="range"]{
+        width: 100%;
+    }
+
+    .length-display {
+        text-algin: center;
+        font-size: 0.9rem;
+        color: #666;
+    }
+
+    .checkbox-group {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 10px;
+        margin: 15px 0;
+    }
+
+    .checkbox-item {
+        display: flex;
+        align-items: center;
+        gap: 6px;
+        font-size: 0.9rem;
+        color: #333;
+    }
+
+    input[type="checkbox"] {
+        width: 16px;
+        height: 16px;
+    }
+
+    .generate-btn {
+        width: 100%;
+        padding: 12px;
+        background: #222;
+        color: #fff;
+        border: none;
+        border-radius: 6px;
+        font-size: 1rem;
+        cursor: pointer;
+        transition: background 0.2s;
+        margin-bottom: 15px;
+    }
+
+    .generate-btn:hover {
+        background: #444;
+    }
+
+    .password-output {
+        position: relative;
+        margin-bottom: 15px;
+    }
+
+    .password-field {
+        width: 100%;
+        padding: 12px;
+        border: 1px solid #ddd;
+        border-radius: 6px;
+        font-family: monospace;
+        font-size: 0.95rem;
+        background: #fafafa;
+        resize: none;
+        min-height: 70px;
+    }
+
+    .copy-btn {
+        position: absolute;
+        top: 8px;
+        right: 8px;
+        background: #007bff;
+        color: white;
+        border: none;
+        border-radius: 4px;
+        padding: 6px 10px;
+        cursor: pointer;
+        font-size: 0.8rem;
+        transition: background 0.2s;
+    }
+
+    .copy-btn:hover {
+        background: #0056b3;
+    }
+
+    .strength-meter {
+        margin-top: 8px;
+        height: 6px;
+        background: #eee;
+        border-radius: 3px;
+        overflow: hidden;
+    }
+
+    .strength-fill {
+        height: 100%;
+        transition: width 0.3s;
+    }
+
+    .strength-text {
+        text-align: center;
+        margin-top: 6px;
+        font-size: 0.85rem;
+        color: #555;
+    }
+
+    .security-tips{
+        font-size: 0.8rem;
+        color: #555;
+        margin-top: 15px;
+        border-top: 1px solid #eee;
+        padding-top: 10px;
+    }
+  </style>
+</head>
+<body>
+    <div class="container">
+        <h1> Password Generator</h1>
+
+        <div class="form-group">
+            <label for="length">Password Length</label>
+            <input type="range" id="length" min="4" max="128" value="16">
+            <div class="length-display" id="lengthDisplay">16 characters</div>
+        </div>
+
+        <div class="checkbox-group">
+          <div class="checkbox-item"><input type="checkbox" id="uppercase" checked><label for="uppercase">Uppercase</label></div>
+          <div class="checkbox-item"><input type="checkbox" id="lowercase" checked><label for="lowercase">Lowercase</label></div>
+          <div class="checkbox-item"><input type="checkbox" id="numbers" checked><label for="numbers">Numbers</label></div>
+          <div class="checkbox-item"><input type="checkbox" id="symbols" checked><label for="symbols">Symbols</label></div>
+        </div>
+
+        <button class="generate-btn" onclick="generatePassword()">Generate Password</button>
+
+
+        <div class="password-output">
+          <textarea class="password-field" id="passwordField" readonly placeholder="Your password will appear here..."></textarea>
+          <button class="copy-btn" id="copyBtn" onclick="copyPassword()" style="display: none;">Copy</button>
+        </div>
+
+        <div class="strength-meter">
+          <div class="strength-fill" id="strengthFill"></div>
+        </div>
+        <div class="strength-text" id="strengthText"></div>
+
+        <div class="security-tips">
+          <p>• Use unique passwords<br>• Store in a password manager<br>• Enable 2FA</p>
+        </div>
+    </div>
+
+    <script>
+        // char set for pw gen
+        const charSets = {
+            uppercase: 'ABCDEFGHIJKLMNOPQRSTUVWXYZ',
+            lowercase: 'abcdefghijklmnopqrstuvwxyz',
+            numbers: '0123456789',
+            symbols: '!@#$%^&*()-_=+[]{}|;:,.<>?'
+        };
+
+        //len display update
+        document.getElementById('length').addEventListener('input', function() {
+            document.getElementById('lengthDisplay').textContent = this.value + ' characters';
+        });
+
+        // password generation
+        function generatePassword() {
+            const length = parseInt(document.getElementbyId('length').value);
+            const useUppercase = document.getElementById('uppercase').checked;
+            const useLowercase = document.getElementById('lowercase').checked;
+            const useNumbers = document.getElementById('numbers').checked;
+            const useSymbols = document.getElementById('symbols').checked;
+
+            // validate
+            if (!useUppercase && !useLowercase && !useNumbers && !useSymbols) {
+                alert('Please select at least one character type.');
+                return;
+            }
+
+            // build char set
+            let charPool = '';
+            let requiredChars = [];
+
+
+            if (useUppercase) {
+                charPool += charSets.uppercase;
+                requiredChars.push(getRandomChar(charSets.uppercase));
+            }
+            if (useLowercase) {
+                charPool += charSets.lowercase;
+                requiredChars.push(getRandomChar(charSets.lowercase));
+            }
+            if (useNumbers) {
+                charPool += charSets.numbers;
+                requiredChars.push(getRandomChar(charSets.numbers));
+            }
+            if (useSymbols) {
+                charPool += charSets.symbols;
+                requiredChars.push(getRandomChar(charSets.symbols));
+            }
+            // gen pw
+        }
